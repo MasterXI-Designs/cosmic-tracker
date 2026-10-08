@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0b0720">
+<meta name="description" content="Cosmic Tracker — daily space weather, sidereal transits, numerology dashboard">
+<title>Cosmic Tracker ✦</title>
+<style>
+:root{
+  --bg:#0b0720; --bg2:#140d33; --card:#181238; --card2:#1f1750;
+  --text:#efeaff; --muted:#a99fd6; --accent:#8b5cff; --accent2:#c0a8ff;
+  --gold:#ffd166; --good:#5cd6a0; --warn:#ffb86b; --bad:#ff6b8b; --cyan:#6bd6ff;
+  --radius:16px; --shadow:0 8px 30px rgba(0,0,0,.45);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  background:radial-gradient(1200px 700px at 80% -10%, #2a1660 0%, var(--bg) 55%);
+  color:var(--text); min-height:100vh; padding-bottom:90px;
+}
+header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:calc(14px + env(safe-area-inset-top)) 18px 12px;
+  position:sticky;top:0;z-index:20;
+  background:linear-gradient(180deg, rgba(11,7,32,.96), rgba(11,7,32,.82) 70%, transparent);
+  backdrop-filter:blur(10px);
+}
+.logo{display:flex;align-items:center;gap:10px;font-size:1.25rem;font-weight:700}
+.logo .star{font-size:1.5rem}
+.sub{font-size:.72rem;color:var(--muted);font-weight:400;display:block;margin-top:2px}
+.iconbtn{
+  background:var(--card);border:1px solid #ffffff22;border-radius:12px;color:var(--text);
+  width:42px;height:42px;font-size:1.15rem;cursor:pointer;transition:.2s;
+}
+.iconbtn:hover{background:var(--card2)}
+nav.tabs{
+  display:flex;gap:8px;padding:8px 14px;overflow-x:auto;scrollbar-width:none;
+  position:sticky;top:64px;z-index:19;
+}
+nav.tabs::-webkit-scrollbar{display:none}
+.tab-btn{
+  flex:0 0 auto;padding:9px 16px;border-radius:999px;border:1px solid #ffffff1e;
+  background:rgba(24,18,56,.7);color:var(--muted);font-size:.9rem;cursor:pointer;transition:.2s;
+}
+.tab-btn.active{background:var(--accent);color:#fff;border-color:transparent;box-shadow:0 4px 16px rgba(139,92,255,.45)}
+main{max-width:860px;margin:0 auto;padding:8px 16px 30px}
+.hidden{display:none !important}
+.grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(250px,1fr))}
+.card{
+  background:linear-gradient(160deg,var(--card),var(--bg2));
+  border:1px solid #ffffff14;border-radius:var(--radius);padding:16px 18px;box-shadow:var(--shadow);
+}
+.card h3{font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+.big{font-size:2.2rem;font-weight:800;line-height:1.1}
+.badge{display:inline-block;padding:3px 10px;border-radius:999px;font-size:.75rem;font-weight:600}
+.b-good{background:rgba(92,214,160,.15);color:var(--good)}
+.b-warn{background:rgba(255,184,107,.15);color:var(--warn)}
+.b-bad{background:rgba(255,107,139,.15);color:var(--bad)}
+.b-info{background:rgba(107,214,255,.15);color:var(--cyan)}
+.muted{color:var(--muted);font-size:.85rem}
+.kv{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px dashed #ffffff12;font-size:.92rem}
+.kv:last-child{border-bottom:none}
+.spark{width:100%;height:60px;color:var(--accent2)}
+.k-low{color:var(--good)} .k-mod{color:var(--cyan)} .k-high{color:var(--warn)} .k-storm{color:var(--bad)}
+.meter{height:14px;border-radius:8px;background:#ffffff12;overflow:hidden;margin:10px 0 4px}
+.meter>i{display:block;height:100%;border-radius:8px;transition:width .8s ease}
+.gauge-wrap{display:flex;align-items:center;gap:16px}
+.gauge{width:110px;height:110px;border-radius:50%;flex:0 0 auto;display:grid;place-items:center;position:relative}
+.gauge::after{content:"";position:absolute;inset:12px;border-radius:50%;background:var(--card)}
+.gauge b{position:relative;z-index:2;font-size:1.5rem}
+.gauge span{position:relative;z-index:2;font-size:.6rem;color:var(--muted)}
+.sign-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(105px,1fr));gap:10px}
+.body-card{
+  background:#ffffff08;border:1px solid #ffffff12;border-radius:12px;padding:10px;text-align:center;
+}
+.body-card .glyph{font-size:1.6rem}
+.body-card .pname{font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+.body-card .pos{font-weight:700;font-size:1.02rem;margin-top:2px}
+.retro{color:var(--bad);font-size:.7rem;font-weight:700}
+.aspect-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px dashed #ffffff12;font-size:.93rem}
+.aspect-row:last-child{border-bottom:none}
+.asp-sym{font-size:1.25rem;width:34px;text-align:center}
+.hard .asp-sym{color:var(--warn)} .soft .asp-sym{color:var(--good)}
+.advice-item{display:flex;gap:12px;padding:11px 0;border-bottom:1px dashed #ffffff12;align-items:flex-start}
+.advice-item:last-child{border-bottom:none}
+.advice-ico{font-size:1.3rem}
+.moon-widget{display:flex;gap:16px;align-items:center}
+.moon-disc{
+  width:84px;height:84px;border-radius:50%;flex:0 0 auto;
+  background:radial-gradient(circle at 34% 34%, #f4f0ff 0%, #cfc6ee 60%, #9d93c4 100%);
+  position:relative;overflow:hidden;
+}
+.moon-shade{position:absolute;inset:0;border-radius:50%}
+form label{display:block;font-size:.75rem;color:var(--muted);margin:12px 0 5px;letter-spacing:.06em;text-transform:uppercase}
+form input{
+  width:100%;padding:12px 14px;border-radius:12px;border:1px solid #ffffff22;
+  background:#ffffff0a;color:var(--text);font-size:1rem;
+}
+.btn{
+  margin-top:16px;width:100%;padding:13px;border-radius:12px;border:none;cursor:pointer;
+  background:linear-gradient(135deg,var(--accent),#6a3df0);color:#fff;font-size:1rem;font-weight:600;transition:.2s;
+}
+.btn:hover{filter:brightness(1.12)}
+.btn.ghost{background:transparent;border:1px solid #ffffff33}
+.modal-back{
+  position:fixed;inset:0;background:rgba(5,2,18,.78);z-index:50;display:grid;place-items:center;padding:18px;
+}
+.modal{
+  background:linear-gradient(160deg,var(--card2),var(--bg2));border:1px solid #ffffff22;
+  border-radius:20px;padding:24px;max-width:420px;width:100%;box-shadow:var(--shadow);
+  max-height:88vh;overflow-y:auto;
+}
+.disclaimer{font-size:.72rem;color:var(--muted);margin-top:18px;line-height:1.5}
+.updated{font-size:.72rem;color:var(--muted);margin-top:6px}
+footer{text-align:center;color:var(--muted);font-size:.75rem;padding:20px;line-height:1.7}
+.retry{margin-top:8px;background:transparent;border:1px solid #ffffff33;color:var(--text);border-radius:10px;padding:7px 14px;cursor:pointer;font-size:.85rem}
+@media(max-width:480px){ .big{font-size:1.8rem} .gauge{width:92px;height:92px} }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo"><span class="star">✦</span><div>Cosmic Tracker<span class="sub" id="todayDate"></span></div></div>
+  <button class="iconbtn" id="settingsBtn" title="Edit profile">⚙️</button>
+</header>
+
+<nav class="tabs">
+  <button class="tab-btn active" data-tab="today">🔮 Today</button>
+  <button class="tab-btn" data-tab="space">☀️ Space Weather</button>
+  <button class="tab-btn" data-tab="sky">🌌 Sky &amp; Transits</button>
+  <button class="tab-btn" data-tab="profile">👤 Profile</button>
+</nav>
+
+<main>
+  <!-- ===== TODAY ===== -->
+  <section id="tab-today">
+    <div class="grid" style="margin-bottom:14px">
+      <div class="card">
+        <h3>Your Personal Day</h3>
+        <div id="personalDayBox"></div>
+      </div>
+      <div class="card">
+        <h3>Universal Day Number</h3>
+        <div id="universalDayBox"></div>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:14px">
+      <h3>Cosmic Climate</h3>
+      <div class="gauge-wrap">
+        <div class="gauge" id="climateGauge"><b>—</b><span>/100</span></div>
+        <div style="flex:1">
+          <div class="big" id="climateLabel">…</div>
+          <p class="muted" id="climateDesc"></p>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Guidance For Today</h3>
+      <div id="adviceList"><p class="muted">Loading cosmic conditions…</p></div>
+      <p class="disclaimer">Space weather data is real science from NOAA SWPC. Numerology &amp; sidereal astrology are interpretive traditions offered for reflection and entertainment.</p>
+    </div>
+  </section>
+
+  <!-- ===== SPACE WEATHER ===== -->
+  <section id="tab-space" class="hidden">
+    <div class="card" style="margin-bottom:14px">
+      <h3>Geomagnetic Activity (Kp Index)</h3>
+      <div class="big"><span id="kpValue">—</span> <span id="kpLevel" class="badge b-info">loading</span></div>
+      <div id="kpSpark" class="spark"></div>
+      <p class="muted" id="kpNote"></p>
+      <p class="updated" id="kpUpdated"></p>
+    </div>
+    <div class="grid" style="margin-bottom:14px">
+      <div class="card"><h3>Solar Wind Speed</h3><div class="big" id="swSpeed">—</div><p class="muted">km/s</p></div>
+      <div class="card"><h3>Proton Density</h3><div class="big" id="swDensity">—</div><p class="muted">particles/cm³</p></div>
+      <div class="card"><h3>X-ray Flux (GOES)</h3><div class="big" id="xrayClass">—</div><p class="muted" id="xrayNote"></p></div>
+    </div>
+    <div class="card" style="margin-bottom:14px">
+      <h3>X-ray Flux — Last 6 Hours</h3>
+      <div id="xraySpark" class="spark"></div>
+    </div>
+    <div class="card">
+      <h3>Recent Flare Events</h3>
+      <div id="flareList"><p class="muted">Scanning GOES data…</p></div>
+      <button class="retry" id="refreshBtn">↻ Refresh data</button>
+      <p class="updated" id="swUpdated"></p>
+    </div>
+  </section>
+
+  <!-- ===== SKY & TRANSITS ===== -->
+  <section id="tab-sky" class="hidden">
+    <div class="card" style="margin-bottom:14px">
+      <h3>Moon Phase &amp; Sign</h3>
+      <div class="moon-widget">
+        <div class="moon-disc" id="moonDisc"></div>
+        <div>
+          <div class="big" id="moonPhaseName">…</div>
+          <p class="muted" id="moonInfo"></p>
+        </div>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:14px">
+      <h3>Sidereal Positions <span class="muted" style="text-transform:none">(Lahiri ayanamsa)</span></h3>
+      <div class="sign-grid" id="bodyGrid"></div>
+    </div>
+    <div class="card">
+      <h3>Active Aspects</h3>
+      <div id="aspectList"><p class="muted">Computing transits…</p></div>
+    </div>
+  </section>
+
+  <!-- ===== PROFILE ===== -->
+  <section id="tab-profile" class="hidden">
+    <div class="card">
+      <h3>Your Cosmic Profile</h3>
+      <form id="profileForm">
+        <label for="pName">Display Name</label>
+        <input type="text" id="pName" placeholder="Star Traveler" maxlength="40">
+        <label for="pDob">Date of Birth</label>
+        <input type="date" id="pDob" required>
+        <button type="submit" class="btn">Save Profile</button>
+      </form>
+    </div>
+    <div class="card" id="profileResults" style="margin-top:14px"></div>
+    <div class="card" style="margin-top:14px">
+      <h3>About This App</h3>
+      <p class="muted" style="line-height:1.7">
+        Cosmic Tracker blends live NOAA space weather (solar flares, solar wind, geomagnetic Kp) with a local
+        numerology engine and a sidereal ephemeris computed entirely in your browser — no tracking, no accounts,
+        your profile never leaves your device (localStorage only).
+      </p>
+      <button class="btn ghost" id="clearBtn" type="button">Clear saved data</button>
+    </div>
+  </section>
+</main>
+
+<footer>
+  Data: NOAA Space Weather Prediction Center · swpc.noaa.gov<br>
+  Cosmic Tracker · PWA · runs 100% locally · ✦
+</footer>
+
+<!-- First-run modal -->
+<div class="modal-back hidden" id="welcomeModal">
+  <div class="modal">
+    <h2 style="margin-bottom:8px">✦ Welcome to Cosmic Tracker</h2>
+    <p class="muted" style="line-height:1.6">To personalize your daily readings, tell me your birth date. It stays on your device — nothing is uploaded anywhere.</p>
+    <form id="welcomeForm">
+      <label for="wName">Display Name</label>
+      <input type="text" id="wName" placeholder="Star Traveler" maxlength="40">
+      <label for="wDob">Date of Birth</label>
+      <input type="date" id="wDob" required>
+      <button type="submit" class="btn">Begin ✦</button>
+    </form>
+    <button class="btn ghost" id="skipBtn" type="button">Skip for now</button>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+/* ============================================================
+   COSMIC TRACKER — single-file PWA
+   Sections: utils · numerology · ephemeris · space weather ·
+             synthesis · rendering · boot
+   ============================================================ */
+
+const $ = s => document.querySelector(s);
+const LS_KEY = 'cosmicTracker.profile.v1';
+
+/* ---------------- Utilities ---------------- */
+const norm360 = x => ((x % 360) + 360) % 360;
+const d2r = d => d * Math.PI / 180;
+const r2d = r => r * 180 / Math.PI;
+const sinD = d => Math.sin(d2r(d));
+const cosD = d => Math.cos(d2r(d));
+const pad = n => String(n).padStart(2, '0');
+
+function digitSum(n) { n = Math.abs(Math.round(n)); let s = 0; while (n > 0) { s += n % 10; n = Math.floor(n / 10); } return s; }
+function reduceNum(n) { let x = digitSum(n); while (x > 9) { x = digitSum(x); } return x === 0 ? 9 : x; }
+
+function esc(str) { return String(str).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c])); }
+
+function fmtTimeUTC(s) {
+  const d = new Date(String(s).replace(' ', 'T') + 'Z');
+  if (isNaN(d)) return s;
+  return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' }) + ' UTC';
+}
+
+/* ---------------- Numerology engine ---------------- */
+const NUMBER_MEANINGS = {
+  1: { title: 'The Initiator', keyword: 'New Beginnings', energy: 'Yang, pioneering, independent',
+       advice: 'Start the thing you have been circling. Act alone if you must — momentum beats perfection today.' },
+  2: { title: 'The Diplomat', keyword: 'Cooperation', energy: 'Yin, sensitive, receptive',
+       advice: 'Pair up. Listen more than you speak. Small kindnesses ripple far today.' },
+  3: { title: 'The Communicator', keyword: 'Expression', energy: 'Creative, social, scattered',
+       advice: 'Speak, write, make. Your words carry extra sparkle — just mind the overpromising.' },
+  4: { title: 'The Builder', keyword: 'Foundation', energy: 'Grounded, disciplined, steady',
+       advice: 'Organize, repair, budget, plan. Unsexy progress compounds beautifully today.' },
+  5: { title: 'The Wanderer', keyword: 'Change', energy: 'Restless, curious, free',
+       advice: 'Break routine deliberately. Say yes to the unexpected invitation — not the impulsive purchase.' },
+  6: { title: 'The Nurturer', keyword: 'Harmony', energy: 'Caring, responsible, aesthetic',
+       advice: 'Tend your people and your space. Beautify one corner of your world today.' },
+  7: { title: 'The Seeker', keyword: 'Introspection', energy: 'Analytical, mystical, private',
+       advice: 'Retreat a little. Study, journal, walk alone. Answers surface in the quiet.' },
+  8: { title: 'The Sovereign', keyword: 'Power', energy: 'Ambitious, material, strategic',
+       advice: 'Handle money, negotiate, lead. Big-picture career moves are favored today.' },
+  9: { title: 'The Sage', keyword: 'Completion', energy: 'Compassionate, wise, releasing',
+       advice: 'Finish, forgive, let go. Close one loop — a project, a grudge, a tab.' }
+};
+
+function universalDayNumber(date) {
+  return reduceNum(digitSum(date.getFullYear()) + digitSum(date.getMonth() + 1) + digitSum(date.getDate()));
+}
+
+function personalDayNumber(date, dob) {
+  const [y, m, d] = dob.split('-').map(Number);
+  const ud = digitSum(date.getFullYear()) + digitSum(date.getMonth() + 1) + digitSum(date.getDate());
+  return reduceNum(ud + m + d);
+}
+
+function lifePath(dob) {
+  const digits = dob.replace(/\D/g, '').split('').map(Number).reduce((a, b) => a + b, 0);
+  let raw = digits;
+  if (raw === 11 || raw === 22 || raw === 33) {
+    return { raw, master: true, base: reduceNum(raw) };
+  }
+  let cur = raw;
+  while (cur > 9 && cur !== 11 && cur !== 22 && cur !== 33) { cur = digitSum(cur); }
+  if (cur === 11 || cur === 22 || cur === 33) return { raw: cur, master: true, base: reduceNum(cur) };
+  return { raw: cur, master: false, base: cur };
+}
+
+function birthdayNumber(dob) { const d = parseInt(dob.slice(8, 10), 10); return { raw: d, base: reduceNum(d) }; }
+
+/* ---------------- Ephemeris (Paul Schlyter method, ±0.5° typical) ---------------- */
+const SIGNS = ['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
+const SIGN_GLYPHS = ['♈','♉','♊','♋','♌','♍','♎','♏','♐','♑','♒','♓'];
+
+function toJulian(date) { return date.getTime() / 86400000 + 2440587.5; }
+const dNum = jd => jd - 2451543.5; // Schlyter epoch: 2000 Jan 0.0
+
+// Lahiri ayanamsa ≈ 23.8531° at J2000, precessing ~50.29"/yr
+function ayanamsa(jd) { return 23.8531 + (jd - 2451545.0) / 365.25 * 0.0139694; }
+
+function sunPosition(d) {
+  const w = 282.9404 + 4.70935e-5 * d;
+  const e = 0.016709 - 1.151e-9 * d;
+  const M = norm360(356.0470 + 0.9856002585 * d);
+  const Ls = norm360(w + M);
+  const Ecc = M + r2d(e) * sinD(M) * (1 + e * cosD(M));
+  const xv = cosD(Ecc) - e, yv = Math.sqrt(1 - e * e) * sinD(Ecc);
+  const v = norm360(r2d(Math.atan2(yv, xv)));
+  return { lon: norm360(v + w), dist: Math.hypot(xv, yv), Ls, M };
+}
+
+function keplerSolve(M, e) {
+  let E = d2r(norm360(M));
+  for (let k = 0; k < 10; k++) {
+    E = E - (E - e * Math.sin(E) - d2r(norm360(M))) / (1 - e * Math.cos(E));
+  }
+  return E;
+}
+
+const PLANET_ELEMENTS = [
+  { name: 'Mercury', color: '#c9c9ff', el: d => ({ N: 48.3313 + 3.24587e-5*d, i: 7.0047, w: 29.1241 + 1.01444e-5*d, a: 0.387098, e: 0.205635, M: 168.6562 + 4.0923344368*d }) },
+  { name: 'Venus', color: '#ffd58a', el: d => ({ N: 76.6799 + 2.46590e-5*d, i: 3.3946, w: 54.8910 + 1.38374e-5*d, a: 0.723330, e: 0.006773, M: 48.0052 + 1.6021302244*d }) },
+  { name: 'Mars', color: '#ff9d7a', el: d => ({ N: 49.5574 + 2.11081e-5*d, i: 1.8497, w: 286.5016 + 2.92961e-5*d, a: 1.523688, e: 0.093405, M: 18.6021 + 0.5240207766*d }) },
+  { name: 'Jupiter', color: '#ffc78a', el: d => ({ N: 100.4542 + 2.76854e-5*d, i: 1.3030, w: 273.8777 + 1.64505e-5*d, a: 5.20256, e: 0.048498, M: 19.8950 + 0.0830853001*d }) },
+  { name: 'Saturn', color: '#e8d9a0', el: d => ({ N: 113.6634 + 2.38980e-5*d, i: 2.4886, w: 339.3939 + 2.97661e-5*d, a: 9.55475, e: 0.055546, M: 316.9670 + 0.0334442282*d }) }
+];
+
+function planetGeocentricLon(p, d, sun) {
+  const el = p.el(d);
+  const E = keplerSolve(el.M, el.e);
+  const xv = el.a * (Math.cos(E) - el.e);
+  const yv = el.a * Math.sqrt(1 - el.e * el.e) * Math.sin(E);
+  const v = norm360(r2d(Math.atan2(yv, xv)));
+  const r = Math.hypot(xv, yv);
+  const xo = r * (cosD(el.N) * cosD(v + el.w) - sinD(el.N) * sinD(v + el.w) * cosD(el.i));
+  const yo = r * (sinD(el.N) * cosD(v + el.w) + cosD(el.N) * sinD(v + el.w) * cosD(el.i));
+  const xg = xo + sun.dist * cosD(sun.lon); // + Earth's helio vector = + geo sun vector
+  const yg = yo + sun.dist * sinD(sun.lon);
+  return norm360(r2d(Math.atan2(yg, xg)));
+}
+
+function moonPosition(d, sun) {
+  const N = norm360(125.1228 - 0.0529538083 * d);
+  const w = norm360(318.0634 + 0.1643573223 * d);
+  const e = 0.054900, a = 60.2666;
+  const M = norm360(115.3654 + 13.0649929509 * d);
+  const E = keplerSolve(M, e);
+  const xv = a * (Math.cos(E) - e);
+  const yv = a * Math.sqrt(1 - e * e) * Math.sin(E);
+  const v = norm360(r2d(Math.atan2(yv, xv)));
+  const r = Math.hypot(xv, yv);
+  const xe = r * (cosD(N) * cosD(v + w) - sinD(N) * sinD(v + w) * cosD(5.1454));
+  const ye = r * (sinD(N) * cosD(v + w) + cosD(N) * sinD(v + w) * cosD(5.1454));
+  let lon = norm360(r2d(Math.atan2(ye, xe)));
+
+  // Major perturbations (evection, variation, yearly equation, …)
+  const Lm = norm360(N + w + M);
+  const D = norm360(Lm - sun.Ls);       // mean elongation
+  const Ms = sun.M, Mm = M;
+  lon += -1.274 * sinD(Mm - 2*D) + 0.658 * sinD(2*D) - 0.186 * sinD(Ms)
+       - 0.059 * sinD(2*Mm - 2*D) - 0.057 * sinD(Mm - 2*D + Ms)
+       + 0.053 * sinD(Mm + 2*D) + 0.046 * sinD(2*D - Ms) + 0.041 * sinD(Mm - Ms)
+       - 0.035 * sinD(D) - 0.031 * sinD(Mm + Ms) - 0.015 * sinD(2*norm360(Lm - N) - 2*D)
+       + 0.011 * sinD(Mm - 4*D);
+  return { lon: norm360(lon), node: N };
+}
+
+function moonPhase(moonLon, sunLon) {
+  const elong = norm360(moonLon - sunLon);
+  const illum = (1 - Math.cos(d2r(elong))) / 2;
+  const names = ['New Moon','Waxing Crescent','First Quarter','Waxing Gibbous','Full Moon','Waning Gibbous','Last Quarter','Waning Crescent'];
+  const idx = Math.floor(((elong + 22.5) % 360) / 45);
+  return { name: names[idx], illum, elong };
+}
+
+const ASPECT_DEFS = [
+  { name: 'Conjunction', sym: '☌', angle: 0,   orb: 8, type: 'hard' },
+  { name: 'Sextile',     sym: '⚹', angle: 60,  orb: 5, type: 'soft' },
+  { name: 'Square',       sym: '□', angle: 90,  orb: 6, type: 'hard' },
+  { name: 'Trine',        sym: '△', angle: 120, orb: 6, type: 'soft' },
+  { name: 'Opposition',   sym: '☍', angle: 180, orb: 8, type: 'hard' }
+];
+
+function skySnapshot(date) {
+  const jd = toJulian(date);
+  const d = dNum(jd);
+  const aya = ayanamsa(jd);
+  const sun = sunPosition(d);
+  const moon = moonPosition(d, sun);
+  const bodies = [];
+
+  const addBody = (name, tropicalLon, retro, color) => {
+    const sid = norm360(tropicalLon - aya);
+    bodies.push({
+      name, lon: sid, retro, color,
+      signIdx: Math.floor(sid / 30),
+      sign: SIGNS[Math.floor(sid / 30)],
+      degInSign: sid % 30
+    });
+  };
+
+  addBody('Sun', sun.lon, false, '#ffd166');
+  addBody('Moon', moon.lon, false, '#dfe6ff');
+  for (const p of PLANET_ELEMENTS) {
+    const now = planetGeocentricLon(p, d, sun);
+    const prev = planetGeocentricLon(p, d - 1, sun);
+    const delta = ((now - prev + 540) % 360) - 180;
+    addBody(p.name, now, delta < 0, p.color);
+  }
+  addBody('North Node', norm360(moon.node + 180 - 180), false, '#b8ffd9'); // mean ascending node
+
+  const aspects = [];
+  for (let i = 0; i < bodies.length; i++) {
+    for (let j = i + 1; j < bodies.length; j++) {
+      const sep = Math.abs(((bodies[i].lon - bodies[j].lon + 540) % 360) - 180);
+      for (const asp of ASPECT_DEFS) {
+        if (Math.abs(sep - asp.angle) <= asp.orb) {
+          aspects.push({
+            a: bodies[i].name, b: bodies[j].name, def: asp,
+            orb: Math.abs(sep - asp.angle).toFixed(1),
+            applying: (bodies[j].lon - bodies[i].lon + 360) % 360 < 180
+          });
+        }
+      }
+    }
+  }
+  aspects.sort((x, y) => x.orb - y.orb);
+  return { bodies, aspects, aya, phase: moonPhase(moon.lon, sun.lon) };
+}
+
+/* ---------------- Space weather (NOAA SWPC) ---------------- */
+const SWPC = {
+  kp: 'https://services.swpc.noaa.gov/products/noaa-planetary-k-index.json',
+  plasma: 'https://services.swpc.noaa.gov/products/solar-wind/plasma-2-hour.json',
+  xrs: 'https://services.swpc.noaa.gov/products/goes-xrs-6-hour.json'
+};
+
+async function fetch
