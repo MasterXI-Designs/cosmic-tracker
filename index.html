@@ -79,7 +79,7 @@ input{width:100%;padding:12px;border-radius:10px;border:1px solid #ffffff20;back
 
 <script>
 const LS_KEY='cosmicTracker.v1';
-const $=s=>document.querySelector(s);
+const $=s=>document.querySelector(s)?.textContent!==undefined?document.querySelector(s):document.querySelector(s);
 
 /* === UTILS === */
 const norm360=x=>((x%360)+360)%360;
@@ -204,7 +204,6 @@ $('.tab').forEach(b=>b.onclick=()=>renderTab(b.dataset.tab));
 $('#profileForm').onsubmit=e=>{e.preventDefault();saveProfile({name:$('#pName').value,dob:$('#pDob').value});alert('Saved!');};
 $('#clearBtn').onclick=()=>{localStorage.removeItem(LS_KEY);location.reload();};
 
-/* === BOOT === */
 /* === BOOT === */
 document.addEventListener('DOMContentLoaded',initAll);
 </script>
